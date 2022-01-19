@@ -10,6 +10,10 @@ keymap("", "<Space>", "<Nop>", opts)
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
 
+-- Reload config file
+keymap("n","kj", ":source $MYVIMRC<CR>", opts)
+
+
 -- Modes
 --   normal_mode = "n",
 --   insert_mode = "i",
@@ -35,6 +39,9 @@ keymap("n", "<C-Right>", ":vertical resize +2<CR>", opts)
 keymap("n", "<S-l>", ":bnext<CR>", opts)
 keymap("n", "<S-h>", ":bprevious<CR>", opts)
 
+-- Close buffer 
+keymap("n", "hj", ":Bdelete<CR>", opts)
+
 -- Move text up and down
 keymap("n", "<A-j>", "<Esc>:m .+1<CR>==gi", opts)
 keymap("n", "<A-k>", "<Esc>:m .-2<CR>==gi", opts)
@@ -43,10 +50,7 @@ keymap("n", "<A-k>", "<Esc>:m .-2<CR>==gi", opts)
 -- Press jh fast to enter
 keymap("i", "jh", "<ESC>", opts)
 
-
--- Close Tabs --
-keymap("n", "tt", ":w|b#|bd#", opts)
-
+-- 
 
 
 -- Visual --

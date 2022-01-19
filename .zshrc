@@ -99,6 +99,10 @@ alias ginit="git init ."
 alias gadd="git add ."
 alias gc="git commit -m 'Initial Commit'"
 
+# folder aliases
+alias js="cd ~/documents/Programming/JS/"
+alias py="cd ~/documents/Programming/Python/"
+alias doc="cd ~/documents/"
 
 # Tool Aliases
 alias c="clear"
