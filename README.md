@@ -9,6 +9,7 @@ prefix + C-r = reloads last session
 Shift + arros = switch windows
 prefix C+c = create new windows
 
+SS: https://gist.github.com/henrik/1967800
 
 # ZSh
 ~.shconf
