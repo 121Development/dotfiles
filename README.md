@@ -26,7 +26,7 @@ caps = esc (locally on mac)
 -- Plugins Nvim --
 
 LSPserver
-  LspInstallInfo - to see and install new plugins
+  LspInstallInfo - to see and install new plugins, i on top installs it
 
 # iTerm2
 ~/Library/Preferences/com.googlecode.iterm2.plist.
