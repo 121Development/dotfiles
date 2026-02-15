@@ -1,0 +1,19 @@
+font-size = 14
+background-opacity = 0.92
+gtk-titlebar = false
+
+font-thicken = false
+
+window-padding-x = 10
+window-padding-y = 10
+window-padding-balance = true
+fullscreen = false
+
+macos-titlebar-style = tabs
+macos-option-as-alt = false
+
+cursor-style = block
+cursor-style-blink = false
+
+custom-shader = shaders/bloom025.glsl
+keybind = shift+enter=text:\x1b\r
