@@ -1,124 +1,62 @@
 return {
-	{
-		"williamboman/mason.nvim",
-		lazy = false,
-		config = function()
-			require("mason").setup()
-		end,
+	"neovim/nvim-lspconfig",
+	lazy = false,
+	dependencies = {
+		{ "williamboman/mason.nvim", opts = {} },
+		{ "williamboman/mason-lspconfig.nvim", opts = { auto_install = true } },
 	},
-	{
-		"williamboman/mason-lspconfig.nvim",
-		lazy = false,
-		opts = {
-			auto_install = true,
-		},
-	},
-	{
-		"neovim/nvim-lspconfig",
-		lazy = false,
-		config = function()
-			--local capabilities = require("cmp_nvim_lsp").default_capabilities()
-      local capabilities = require('blink.cmp').get_lsp_capabilities()
+	config = function()
+		local capabilities = require("blink.cmp").get_lsp_capabilities()
+		local lspconfig = require("lspconfig")
 
-			local lspconfig = require("lspconfig")
-      
-      local is_in_deno_repo = lspconfig.util.root_pattern('deno.json', 'import_map.json', 'deno.jsonc')(vim.fn.getcwd())
-      local is_in_deno_part_of_repo = vim.fn.match(vim.fn.expand '%:p', 'supabase/functions') > -1
+		-- Servers with default settings
+		local servers = { "svelte", "marksman", "pyright", "html" }
+		for _, server in ipairs(servers) do
+			lspconfig[server].setup({ capabilities = capabilities })
+		end
 
-      if is_in_deno_repo or is_in_deno_part_of_repo then
-        if client.name == 'ts_ls' then
-          client.stop()
-          return
-        end
-      end
-
-    
-    lspconfig.svelte.setup({
-                capabilities = capabilities
-            })
-
-
-      lspconfig.marksman.setup({
-        capabilities = capabilities
-      })
-
-      lspconfig.pyright.setup({
-        capabilities = capabilities
-      })
-
+		-- TypeScript — won't start in Deno projects (no tsconfig/package.json there)
 		lspconfig.ts_ls.setup({
-				capabilities = capabilities,
-        root_dir = lspconfig.util.root_pattern("tsconfig.json", "jsconfig.json", "package.json"),
-        filetypes = { "javascript", "typescript", "javascriptreact", "typescriptreact" },
-        single_file_support = false,
-        on_attach = function(client, bufnr)
-            -- Disable formatting from tsserver
-            client.server_capabilities.document_formatting = false
-        end,
-   --      commands = {
-   --          OrganizeImports = {
-   --              organize_imports,
-   --                  description = "Organize Imports",
-   --          },
-   --      },
-			})
+			capabilities = capabilities,
+			root_dir = lspconfig.util.root_pattern("tsconfig.json", "jsconfig.json", "package.json"),
+			single_file_support = false,
+		})
 
-      lspconfig.denols.setup({
-        capabilities = capabilities,
-        single_file_support = false,
-        root_dir = lspconfig.util.root_pattern("deno.json", "deno.jsonc"),
-          on_attach = function(client, bufnr)
-            vim.cmd "LspStop ts_ls"
-          end,
-     })
+		-- Deno — won't start in Node projects (no deno.json there)
+		lspconfig.denols.setup({
+			capabilities = capabilities,
+			root_dir = lspconfig.util.root_pattern("deno.json", "deno.jsonc"),
+			single_file_support = false,
+		})
 
-			lspconfig.html.setup({
-				capabilities = capabilities,
-			})
-
-			-- lspconfig.tailwindcss.setup({
-			-- 	capabilities = capabilities,
-			-- })
-
-			lspconfig.lua_ls.setup({
-				capabilities = capabilities,
-				settings = {
-					Lua = {
-						runtime = {
-							version = "LuaJIT",
-						},
-						diagnostics = {
-							globals = { "vim" },
-						},
-						workspace = {
-							checkThirdParty = false,
-							library = {
-								vim.env.VIMRUNTIME,
-							},
-						},
-						telemetry = {
-							enable = false,
-						},
-						hint = {
-							enable = true,
-						},
+		-- Lua — Neovim-aware
+		lspconfig.lua_ls.setup({
+			capabilities = capabilities,
+			settings = {
+				Lua = {
+					runtime = { version = "LuaJIT" },
+					diagnostics = { globals = { "vim" } },
+					workspace = {
+						checkThirdParty = false,
+						library = { vim.env.VIMRUNTIME },
 					},
 				},
-			})
+			},
+		})
 
-			vim.keymap.set("n", "<leader>r", vim.lsp.buf.rename, {})
-			vim.keymap.set("n", "K", vim.lsp.buf.hover, {})
-			vim.keymap.set("n", "<leader>gt", vim.lsp.buf.type_definition, {})
-			vim.keymap.set("n", "<leader>gi", vim.lsp.buf.implementation, {})
-			vim.keymap.set("n", "<leader>gd", vim.lsp.buf.definition, {})
-			vim.keymap.set("n", "<leader>gr", vim.lsp.buf.references, {})
-			vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, {})
-
-			-- Errors
-			vim.keymap.set("n", "<leader>of", vim.diagnostic.open_float, {})
-			vim.keymap.set("n", "<leader>dl", "<cmd>Telescope diagnostics<cr>", {})
-			vim.keymap.set("n", "g]", vim.diagnostic.goto_next, {})
-			vim.keymap.set("n", "g[", vim.diagnostic.goto_prev, {})
-		end,
-	},
+		-- Only add keymaps that Neovim 0.11 doesn't provide by default
+		-- Built-in defaults: K=hover, grn=rename, gra=code action, grr=references,
+		--   gri=implementation, gO=document symbols, [d/]d=diagnostics, CTRL-S=sig help
+		vim.api.nvim_create_autocmd("LspAttach", {
+			callback = function(ev)
+				local map = function(keys, func, desc)
+					vim.keymap.set("n", keys, func, { buffer = ev.buf, desc = desc })
+				end
+				map("gd", vim.lsp.buf.definition, "Go to definition")
+				map("gD", vim.lsp.buf.declaration, "Go to declaration")
+				map("gt", vim.lsp.buf.type_definition, "Go to type definition")
+				map("<leader>dl", "<cmd>Telescope diagnostics<cr>", "Diagnostics list")
+			end,
+		})
+	end,
 }
